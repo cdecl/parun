@@ -41,6 +41,7 @@ void Worker(const string& cmd, const config &conf)
 {
     int MAXLINE = 1024;
     char buff[MAXLINE] = {0,};
+    memset(buff, 0, MAXLINE);
 
     if (conf.verbose) cout << cmd << endl;
 

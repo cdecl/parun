@@ -3,9 +3,8 @@ cmake_minimum_required(VERSION 3.5)
 project(parun)
 
 #add_subdirectory(/subdir)
-
-include_directories(./clipp/include ./ThreadPool)
-# set(CMAKE_CXX_FLAGS "-Wall -std=c++14 -O2")
+set(CMAKE_CXX_FLAGS "-Wall -std=c++11 -O2")
+include_directories(clipp/include ThreadPool)
 # link_directories(/usr/local/opt/openssl/lib)
 # link_libraries(-pthread -lboost_system -lboost_regex -lssl -lcrypto)
 
