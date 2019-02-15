@@ -40,8 +40,8 @@ bool Usage(int argc, char* argv[], config &conf)
 void Worker(const string& cmd, const config &conf)
 {
     int MAXLINE = 1024;
-    char buff[MAXLINE] = {0,};
-    memset(buff, 0, MAXLINE);
+    char buff[MAXLINE];
+    // memset(buff, 0, MAXLINE);
 
     if (conf.verbose) cout << cmd << endl;
 
