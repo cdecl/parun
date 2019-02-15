@@ -6,7 +6,7 @@ project(parun)
 set(CMAKE_CXX_FLAGS "-Wall -std=c++11 -O2")
 include_directories(clipp/include ThreadPool)
 # link_directories(/usr/local/opt/openssl/lib)
-# link_libraries(-pthread -lboost_system -lboost_regex -lssl -lcrypto)
+link_libraries(-pthread )
 
 # set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 # set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
