@@ -11,6 +11,11 @@ using namespace std;
 #include <clipp.h>
 #include <ThreadPool.h>
 
+#ifdef _MSC_VER 
+  #define popen _popen
+  #define pclose _pclose 
+#endif
+
 struct config {
     int threads = 1;
     string path = "";
@@ -39,7 +44,7 @@ bool Usage(int argc, char* argv[], config &conf)
 
 void Worker(const string& cmd, const config &conf)
 {
-    int MAXLINE = 1024;
+    const int MAXLINE = 1024;
     char buff[MAXLINE];
     // memset(buff, 0, MAXLINE);
 
