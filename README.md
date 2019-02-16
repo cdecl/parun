@@ -26,6 +26,7 @@ make
 ```
 ```
 cat ../cmd.txt | ./parun -p 4 -v
+./parun -f ../cmd.txt -p 4 -v
 ```
 
 - Windows : Visual Studio
@@ -46,6 +47,7 @@ make
 
 ```
 type ..\cmd.txt | parun.exe -p 4 -v
+parun.exe -f ..\cmd.txt -p 4 -v
 ```
 
 
