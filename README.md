@@ -1,6 +1,6 @@
 
 ## parun 
-Parallel processes running 
+Parallel thread running 
 
 ### Build 
 - git clone 
