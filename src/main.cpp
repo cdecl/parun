@@ -19,6 +19,8 @@ using namespace std;
 struct config {
     int threads = 1;
     string path = "";
+    string pholder = "{}";
+    string command = "{}";
     bool verbose = false;
 };
 
@@ -29,28 +31,44 @@ bool Usage(int argc, char* argv[], config &conf)
     bool success = true;
 
     auto cli = (
-        option("-f") & value("file_path", conf.path),
-        option("-p") & value("threads", conf.threads),
-        option("-v").set(conf.verbose)
+        option("-f") & value("file", conf.path).doc("Input file path, default"),
+        option("-p") & value("threads", conf.threads).doc("Thread pool count"),
+        option("-i") & value("placeholder", conf.pholder).doc("Placeholder string (default : {})"),
+        option("-v").set(conf.verbose).doc("Verbose"),
+        value("Command", conf.command).doc("Command expression (ex: \"sleep {}\")")
     );
 
     if(!parse(argc, argv, cli)) {
-        std::cout << usage_lines(cli, argv[0]) << endl;
+       cout <<  make_man_page(cli, argv[0]) << endl;
+        //std::cout << usage_lines(cli, argv[0]) << endl;
         success = false;
     }
 
     return success;
 }
 
-void Worker(const string& cmd, const config &conf)
+string replaceAll(string str, const string& f, const string &r)
+{
+	string::size_type offset = 0;
+	string::size_type pos = string::npos;
+
+	while ((pos = str.find(f, offset)) != string::npos) {
+		str.replace(pos, f.length(), r);
+		offset = pos + r.length();
+	}
+
+	return str;
+}
+
+void Worker(const string& expr, const config &conf)
 {
     const int MAXLINE = 1024;
     char buff[MAXLINE];
     // memset(buff, 0, MAXLINE);
 
-    if (conf.verbose) cout << cmd << endl;
+    if (conf.verbose) cout << expr << endl;
 
-    FILE* fp = popen(cmd.c_str(), "r");
+    FILE* fp = popen(expr.c_str(), "r");
     while(fgets(buff, MAXLINE, fp)) {
         cout << buff;
     }
@@ -63,11 +81,15 @@ void Run(const config &conf)
         ThreadPool pool(conf.threads);
         vector<future<void>> vs;
         
-        string cmd;
+        string expr;
         while (!fin.eof()) {
-            getline(fin, cmd);
+            getline(fin, expr);
+
+            if (expr.empty()) continue;
+            expr = replaceAll(conf.command, conf.pholder, expr);
+
             vs.emplace_back(
-                pool.enqueue(Worker, cmd, conf)
+                pool.enqueue(Worker, expr, conf)
             );
         }
 

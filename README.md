@@ -25,8 +25,8 @@ cmake ..
 make 
 ```
 ```
-cat ../cmd.txt | ./parun -p 4 -v
-./parun -f ../cmd.txt -p 4 -v
+cat ../cmd.txt | ./parun -p 4 -v "sleep {}"
+./parun -f ../cmd.txt -p 4 -v "sleep {}"
 ```
 
 - Windows : Visual Studio
@@ -46,8 +46,8 @@ make
 ```
 
 ```
-type ..\cmd.txt | parun.exe -p 4 -v
-parun.exe -f ..\cmd.txt -p 4 -v
+type ..\cmd.txt | parun.exe -p 4 -v "sleep {}"
+parun.exe -f ..\cmd.txt -p 4 -v "sleep {}"
 ```
 
 
