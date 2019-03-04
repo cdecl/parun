@@ -60,7 +60,7 @@ string replaceAll(string str, const string& f, const string &r)
 	return str;
 }
 
-void Worker(const string& expr, const config &conf)
+void Worker(const string& expr, const string& param, const config &conf)
 {
     const int MAXLINE = 1024;
     char buff[MAXLINE];
@@ -70,7 +70,7 @@ void Worker(const string& expr, const config &conf)
 
     FILE* fp = popen(expr.c_str(), "r");
     while(fgets(buff, MAXLINE, fp)) {
-        cout << buff;
+        cout << "[" << param << "] " << buff;
     }
     pclose(fp);
 }
@@ -81,15 +81,15 @@ void Run(const config &conf)
         ThreadPool pool(conf.threads);
         vector<future<void>> vs;
         
-        string expr;
+        string expr, param;
         while (!fin.eof()) {
-            getline(fin, expr);
+            getline(fin, param);
 
-            if (expr.empty()) continue;
-            expr = replaceAll(conf.command, conf.pholder, expr);
+            if (param.empty()) continue;
+            expr = replaceAll(conf.command, conf.pholder, param);
 
             vs.emplace_back(
-                pool.enqueue(Worker, expr, conf)
+                pool.enqueue(Worker, expr, param, conf)
             );
         }
 
