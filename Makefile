@@ -1,6 +1,6 @@
 CC = g++
 CC_FLAGS = -std=c++11 -pedantic -Wall -O2 -I./clipp/include -I./ThreadPool
-LD_LIBS = -pthread
+LD_LIBS = -pthread -static
 
 EXEC = parun
 SOURCES = $(wildcard src/*.cpp)
