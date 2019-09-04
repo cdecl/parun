@@ -20,7 +20,7 @@ struct config {
     int threads = 1;
     string path = "";
     string pholder = "{}";
-    string command = "{}";
+    vector<string> command;
     bool verbose = false;
 };
 
@@ -35,7 +35,7 @@ bool Usage(int argc, char* argv[], config &conf)
         option("-p") & value("threads", conf.threads).doc("Thread pool count"),
         option("-i") & value("placeholder", conf.pholder).doc("Placeholder string (default : {})"),
         option("-v").set(conf.verbose).doc("Verbose"),
-        value("Command", conf.command).doc("Command expression (ex: \"sleep {}\")")
+        values("Command", conf.command).doc("Command expression (ex: \"sleep {}\")")
     );
 
     if(!parse(argc, argv, cli)) {
@@ -43,7 +43,7 @@ bool Usage(int argc, char* argv[], config &conf)
         //std::cout << usage_lines(cli, argv[0]) << endl;
         success = false;
     }
-
+    
     return success;
 }
 
@@ -86,7 +86,12 @@ void Run(const config &conf)
             getline(fin, param);
 
             if (param.empty()) continue;
-            expr = replaceAll(conf.command, conf.pholder, param);
+
+            expr = "";
+            for (auto s : conf.command) {
+                expr += replaceAll(s, conf.pholder, param); 
+                expr += " ";
+            }
 
             vs.emplace_back(
                 pool.enqueue(Worker, expr, param, conf)
