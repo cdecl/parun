@@ -19,6 +19,7 @@ using namespace std;
 struct config {
     int threads = 1;
     string path = "";
+    bool isholder = false;
     string pholder = "{}";
     vector<string> command;
     bool verbose = false;
@@ -33,9 +34,9 @@ bool Usage(int argc, char* argv[], config &conf)
     auto cli = (
         option("-f") & value("file", conf.path).doc("Input file path, default"),
         option("-p") & value("threads", conf.threads).doc("Thread pool count"),
-        option("-i") & value("placeholder", conf.pholder).doc("Placeholder string (default : {})"),
+        option("-i").set(conf.isholder).doc("Placeholder string (default : {})"),
         option("-v").set(conf.verbose).doc("Verbose"),
-        values("Command", conf.command).doc("Command expression (ex: \"sleep {}\")")
+        values("Command", conf.command).doc("Command expression (ex: echo {} )")
     );
 
     if(!parse(argc, argv, cli)) {
@@ -60,17 +61,28 @@ string replaceAll(string str, const string& f, const string &r)
 	return str;
 }
 
-void Worker(const string& expr, const string& param, const config &conf)
+void Worker(const string& redirect, const config &conf)
 {
     const int MAXLINE = 1024;
     char buff[MAXLINE];
     // memset(buff, 0, MAXLINE);
 
-    if (conf.verbose) cout << expr << endl;
+    string cmd {};
+    for (auto s : conf.command) {
+        if (conf.isholder) {
+            cmd += replaceAll(s, conf.pholder, redirect); 
+        } else {
+            cmd += s;
+        }
+        cmd += " ";
+    }
 
-    FILE* fp = popen(expr.c_str(), "r");
+    if (!conf.isholder) cmd += redirect;
+    if (conf.verbose) cout << cmd << endl;
+
+    FILE* fp = popen(cmd.c_str(), "r");
     while(fgets(buff, MAXLINE, fp)) {
-        cout << "[" << param << "] " << buff;
+        cout << buff;
     }
     pclose(fp);
 }
@@ -81,24 +93,17 @@ void Run(const config &conf)
         ThreadPool pool(conf.threads);
         vector<future<void>> vs;
         
-        string expr, param;
+        string redirect;
         while (!fin.eof()) {
-            getline(fin, param);
-
-            if (param.empty()) continue;
-
-            expr = "";
-            for (auto s : conf.command) {
-                expr += replaceAll(s, conf.pholder, param); 
-                expr += " ";
-            }
+            getline(fin, redirect);
+            if (redirect.empty()) continue;
 
             vs.emplace_back(
-                pool.enqueue(Worker, expr, param, conf)
+                pool.enqueue(Worker, redirect, conf)
             );
         }
 
-        for (auto &&v : vs) v.get();
+        for (auto &&v : vs) v.get();    // wait
     };
 
     if (conf.path.empty()) {
