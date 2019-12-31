@@ -1,6 +1,6 @@
 
 ## parun 
-Parallel thread running 
+Parallel thread running (similar `xargs`)
 
 ### Build 
 - git clone 
@@ -25,8 +25,8 @@ cmake ..
 make 
 ```
 ```
-cat ../cmd.txt | ./parun -p 4 -v "echo {}"
-./parun -f ../cmd.txt -p 4 -v "echo {}"
+cat ../input.txt | ./parun -p 4 -v echo 
+./parun -f ../input.txt -p 4 -v echo 
 ```
 
 - Windows : Visual Studio
@@ -46,8 +46,8 @@ make
 ```
 
 ```
-type ..\cmd.txt | parun.exe -p 4 -v "echo {}"
-parun.exe -f ..\cmd.txt -p 4 -v "echo {}"
+type ..\input.txt | parun.exe -p 4 -v echo 
+parun.exe -f ..\input.txt -p 4 -v echo 
 ```
 
 
