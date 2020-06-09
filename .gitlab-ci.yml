@@ -1,0 +1,17 @@
+stages:
+  - build 
+  
+build:
+  image: gcc:10
+  stage: build
+    
+  script:
+    - git submodule init
+    - git submodule update
+    
+    - make -f Makefile.static
+    - ls -l
+    
+    - echo test | ./parun echo 
+    
+
