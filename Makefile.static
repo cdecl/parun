@@ -1,6 +1,6 @@
 CC = g++
 CC_FLAGS = -std=c++17 -pedantic -Wall -O2 -I./clipp/include -I./ThreadPool 
-LD_LIBS = -pthread -static -static-libstdc++
+LD_LIBS = -Wl,--whole-archive -lpthread -Wl,--no-whole-archive -static -static-libstdc++ 
 # yum install glibc-static libstdc++-devel
 
 EXEC = parun
