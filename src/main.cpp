@@ -16,13 +16,15 @@ using namespace std;
   #define pclose _pclose 
 #endif
 
-struct config {
+struct config
+{
     int threads = 1;
     string path = "";
     bool isholder = false;
     string pholder = "{}";
     vector<string> command;
     bool verbose = false;
+    bool version = false;
 };
 
 
@@ -31,16 +33,16 @@ bool Usage(int argc, char* argv[], config &conf)
     using namespace clipp;
     bool success = true;
 
-    auto cli = (
-        option("-f") & value("file", conf.path).doc("Input file path, default"),
+    auto cli = (option("-f") & value("file", conf.path).doc("Input file path, default"),
         option("-p") & value("threads", conf.threads).doc("Thread pool count"),
-        option("-i").set(conf.isholder).doc("Placeholder string (default : {})"),
-        option("-v").set(conf.verbose).doc("Verbose"),
-        values("Command", conf.command).doc("Command expression (ex: echo {} )")
-    );
+                option("-i", "--replace").set(conf.isholder).doc("Placeholder string (default : {})"),
+                option("-t", "--verbose").set(conf.verbose).doc("Verbose"),
+                option("-v", "--version").set(conf.version).doc("Version 200626.0"),
+                values("Command", conf.command).doc("Command expression (ex: echo {} )"));
 
-    if(!parse(argc, argv, cli)) {
-       cout <<  make_man_page(cli, argv[0]) << endl;
+    if (!parse(argc, argv, cli) || conf.version)
+    {
+        cout << make_man_page(cli, argv[0]) << endl;
         //std::cout << usage_lines(cli, argv[0]) << endl;
         success = false;
     }
@@ -77,8 +79,12 @@ void Worker(const string& redirect, const config &conf)
         cmd += " ";
     }
 
-    if (!conf.isholder) cmd += redirect;
-    if (conf.verbose) cout << cmd << endl;
+    if (!conf.isholder) {
+        cmd += redirect;
+    }
+    if (conf.verbose) {
+        cout << cmd << endl;
+    }
 
     FILE* fp = popen(cmd.c_str(), "r");
     while(fgets(buff, MAXLINE, fp)) {
