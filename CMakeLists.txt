@@ -3,10 +3,10 @@ cmake_minimum_required(VERSION 3.5)
 project(parun)
 
 #add_subdirectory(/subdir)
-set(CMAKE_CXX_FLAGS "-Wall -std=c++11 -O2")
+set(CMAKE_CXX_FLAGS "-Wall -std=c++17 -O2")
 include_directories(clipp/include ThreadPool)
 # link_directories(/usr/local/opt/openssl/lib)
-link_libraries(-pthread )
+link_libraries( -Wl,--whole-archive -lpthread -Wl,--no-whole-archive -static -static-libstdc++ )
 
 # set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 # set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
