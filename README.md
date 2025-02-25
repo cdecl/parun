@@ -6,10 +6,6 @@ Parallel thread running (similar `xargs`)
 - git clone 
 ```
 git clone https://github.com/cdecl/parun.git
-
-# git submodile 
-git submodule init
-git submodule update
 ```
 
 - linux  
