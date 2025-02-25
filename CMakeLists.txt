@@ -1,23 +1,11 @@
+# morden cmake
 cmake_minimum_required(VERSION 3.5)
 
 project(parun)
 
-#add_subdirectory(/subdir)
-set(CMAKE_CXX_FLAGS "-Wall -std=c++17 -O2")
-include_directories(clipp/include ThreadPool)
-# link_directories(/usr/local/opt/openssl/lib)
-link_libraries( -Wl,--whole-archive -lpthread -Wl,--no-whole-archive -static -static-libstdc++ )
-
-# set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-# set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-# set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-
 file(GLOB src "src/*.cpp")
-#set(src xxx.cpp)
-
 add_executable(parun ${src})
 
-# add_library(libname SHARED ${src})
-# add_library(libname-static STATIC ${src})
-# set_target_properties(libname-static PROPERTIES OUTPUT_NAME libname)
-
+target_include_directories(parun PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_compile_options(parun PUBLIC -Wall -std=c++17 -O2)
+target_link_libraries(parun PUBLIC -lpthread)

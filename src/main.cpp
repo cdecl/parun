@@ -8,8 +8,9 @@
 #include <cstdlib>
 using namespace std;
 
-#include <clipp.h>
-#include <ThreadPool.h>
+#include <CLI11.hpp>
+// #include <ThreadPool.h>
+#include <BS_thread_pool.hpp>
 
 #ifdef _MSC_VER 
   #define popen _popen
@@ -30,23 +31,18 @@ struct config
 
 bool Usage(int argc, char* argv[], config &conf) 
 {
-    using namespace clipp;
     bool success = true;
 
-    auto cli = (option("-f") & value("file", conf.path).doc("Input file path, default"),
-        option("-p") & value("threads", conf.threads).doc("Thread pool count"),
-                option("-i", "--replace").set(conf.isholder).doc("Placeholder string (default : {})"),
-                option("-t", "--verbose").set(conf.verbose).doc("Verbose"),
-                option("-v", "--version").set(conf.version).doc("Version 200626.0"),
-                values("Command", conf.command).doc("Command expression (ex: echo {} )"));
+    CLI::App app;
+    app.add_option("-f,--file", conf.path, "Input file path, default");
+    app.add_option("-p,--threads", conf.threads, "Thread pool count");
+    app.add_flag("-i,--replace", conf.isholder, "Placeholder string (default : {})");
+    app.add_flag("-t,--verbose", conf.verbose, "Verbose");
+    app.add_flag("-v,--version", conf.version, "Version 200626.0");
+    app.add_option("Command", conf.command, "Command expression (ex: echo {} )")->required();
 
-    if (!parse(argc, argv, cli) || conf.version)
-    {
-        cout << make_man_page(cli, argv[0]) << endl;
-        //std::cout << usage_lines(cli, argv[0]) << endl;
-        success = false;
-    }
-    
+    CLI11_PARSE(app, argc, argv);
+
     return success;
 }
 
@@ -96,7 +92,8 @@ void Worker(const string& redirect, const config &conf)
 void Run(const config &conf)
 {
     auto run_ = [&conf](istream& fin) {
-        ThreadPool pool(conf.threads);
+        BS::thread_pool pool(conf.threads);
+        // ThreadPool pool(conf.threads);
         vector<future<void>> vs;
         
         string redirect;
@@ -104,9 +101,8 @@ void Run(const config &conf)
             getline(fin, redirect);
             if (redirect.empty()) continue;
 
-            vs.emplace_back(
-                pool.enqueue(Worker, redirect, conf)
-            );
+            auto f = pool.submit_task(std::bind(Worker, redirect, conf));
+            vs.push_back(std::move(f));
         }
 
         for (auto &&v : vs) v.get();    // wait
