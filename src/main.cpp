@@ -17,22 +17,20 @@ using namespace std;
   #define pclose _pclose 
 #endif
 
-struct config
-{
-    int threads = 1;
-    string path = "";
-    bool isholder = false;
-    string pholder = "{}";
-    vector<string> command;
-    bool verbose = false;
-    bool version = false;
+
+struct config {
+    int threads{1};
+    std::string path{};
+    bool isholder{false};
+    std::string pholder{"{}"};
+    std::vector<std::string> command{};
+    bool verbose{false};
+    bool version{false};
 };
 
 
-bool Usage(int argc, char* argv[], config &conf) 
+int ParseArguments(int argc, char* argv[], config &conf) 
 {
-    bool success = true;
-
     CLI::App app;
     app.add_option("-f,--file", conf.path, "Input file path, default");
     app.add_option("-p,--threads", conf.threads, "Thread pool count");
@@ -42,21 +40,17 @@ bool Usage(int argc, char* argv[], config &conf)
     app.add_option("Command", conf.command, "Command expression (ex: echo {} )")->required();
 
     CLI11_PARSE(app, argc, argv);
-
-    return success;
+    return 0;
 }
 
-string replaceAll(string str, const string& f, const string &r)
-{
-	string::size_type offset = 0;
-	string::size_type pos = string::npos;
 
-	while ((pos = str.find(f, offset)) != string::npos) {
-		str.replace(pos, f.length(), r);
-		offset = pos + r.length();
-	}
-
-	return str;
+std::string replaceAll(std::string str, const std::string &from, const std::string &to) {
+    size_t pos = 0;
+    while ((pos = str.find(from, pos)) != std::string::npos) {
+        str.replace(pos, from.length(), to);
+        pos += to.length();
+    }
+    return str;
 }
 
 void Worker(const string& redirect, const config &conf)
@@ -65,66 +59,67 @@ void Worker(const string& redirect, const config &conf)
     char buff[MAXLINE];
     // memset(buff, 0, MAXLINE);
 
-    string cmd {};
+    std::ostringstream cmd;
     for (auto s : conf.command) {
-        if (conf.isholder) {
-            cmd += replaceAll(s, conf.pholder, redirect); 
-        } else {
-            cmd += s;
-        }
-        cmd += " ";
+        cmd << (conf.isholder ? replaceAll(s, conf.pholder, redirect) : s) << " ";
     }
-
+    
     if (!conf.isholder) {
-        cmd += redirect;
-    }
-    if (conf.verbose) {
-        cout << cmd << endl;
+        cmd << redirect;
     }
 
-    FILE* fp = popen(cmd.c_str(), "r");
+    std::string command = cmd.str();
+    if (conf.verbose) {
+        cout << command << endl;
+    }
+
+    FILE* fp = popen(command.c_str(), "r");
+    if (!fp) {
+        std::cerr << "Error executing command: " << command << std::endl;
+        return;
+    }
+
     while(fgets(buff, MAXLINE, fp)) {
         cout << buff;
     }
     pclose(fp);
 }
 
+
 void Run(const config &conf)
 {
-    auto run_ = [&conf](istream& fin) {
+    auto run_ = [&conf](std::istream& fin) {
         BS::thread_pool pool(conf.threads);
-        // ThreadPool pool(conf.threads);
-        vector<future<void>> vs;
+        std::vector<std::future<void>> tasks;
         
-        string redirect;
-        while (!fin.eof()) {
-            getline(fin, redirect);
+        std::string redirect;
+        while (std::getline(fin, redirect)) {
             if (redirect.empty()) continue;
-
+            // tasks.push_back(std::move(pool.submit_task(Worker, redirect, conf)));
             auto f = pool.submit_task(std::bind(Worker, redirect, conf));
-            vs.push_back(std::move(f));
+            tasks.push_back(std::move(f));
         }
 
-        for (auto &&v : vs) v.get();    // wait
+        for (auto &t : tasks) t.get(); // 모든 작업 완료 대기
     };
 
     if (conf.path.empty()) {
-        run_(cin);
-    }
-    else {
-        ifstream fin(conf.path.c_str());
+        run_(std::cin);
+    } else {
+        std::ifstream fin(conf.path);
         if (!fin) {
-            cerr << "File Open Error" << endl;
-            return exit(-1);
+            std::cerr << "File Open Error\n";
+            exit(EXIT_FAILURE);
         }
         run_(fin);
     }
 }
 
+
 int main(int argc, char* argv[]) 
 {
     config conf;
-    if (!Usage(argc, argv, conf)) return 1;
+    ParseArguments(argc, argv, conf);
 
     Run(conf);
 }
