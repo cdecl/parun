@@ -9,7 +9,6 @@
 using namespace std;
 
 #include <CLI11.hpp>
-// #include <ThreadPool.h>
 #include <BS_thread_pool.hpp>
 
 #ifdef _MSC_VER 
@@ -36,7 +35,7 @@ int ParseArguments(int argc, char* argv[], config &conf)
     app.add_option("-p,--threads", conf.threads, "Thread pool count");
     app.add_flag("-i,--replace", conf.isholder, "Placeholder string (default : {})");
     app.add_flag("-t,--verbose", conf.verbose, "Verbose");
-    app.add_flag("-v,--version", conf.version, "Version 200626.0");
+    app.add_flag("-v,--version", conf.version, "Version 250225.0");
     app.add_option("Command", conf.command, "Command expression (ex: echo {} )")->required();
 
     CLI11_PARSE(app, argc, argv);
