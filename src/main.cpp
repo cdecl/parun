@@ -28,7 +28,7 @@ struct config {
 };
 
 
-int ParseArguments(int argc, char* argv[], config &conf) 
+bool ParseArguments(int argc, char* argv[], config &conf) 
 {
     CLI::App app;
     app.add_option("-f,--file", conf.path, "Input file path, default");
@@ -38,8 +38,18 @@ int ParseArguments(int argc, char* argv[], config &conf)
     app.add_flag("-v,--version", conf.version, "Version 250225.0");
     app.add_option("Command", conf.command, "Command expression (ex: echo {} )")->required();
 
-    CLI11_PARSE(app, argc, argv);
-    return 0;
+
+    try {
+        app.parse(argc, argv);
+    } catch (const CLI::ParseError &e) {
+        if (conf.version) {
+            cout << app.help() << endl;
+        }
+        app.exit(e); 
+        return false;
+    }
+
+    return true;
 }
 
 
@@ -118,7 +128,9 @@ void Run(const config &conf)
 int main(int argc, char* argv[]) 
 {
     config conf;
-    ParseArguments(argc, argv, conf);
+    if (!ParseArguments(argc, argv, conf)) {
+        exit(EXIT_FAILURE);
+    }
 
     Run(conf);
 }
